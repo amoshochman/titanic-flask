@@ -16,6 +16,8 @@ CUR_FOLDER = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__
 ATTRIBUTES = 'attributes'
 RAW_DATA = 'data'
 TITANIC_CSV = 'titanic.csv'
+HIST_PDF = 'hist.pdf'
+TITANIC_DB = 'titanic.db'
 
 
 def as_dict(my_object, attributes_list=None):
@@ -25,8 +27,6 @@ def as_dict(my_object, attributes_list=None):
 
 app = Flask(__name__)
 api = Api(app)
-
-ns = api.namespace("todos", description="TODO operations")
 
 
 @api.route('/passengers')
@@ -43,7 +43,7 @@ class Histogram(Resource):
         ax = df.Fare.hist()
         fig = ax.get_figure()
         plt.show()
-        image_path = os.path.join(CUR_FOLDER, RAW_DATA, 'hist.pdf')
+        image_path = os.path.join(CUR_FOLDER, RAW_DATA, HIST_PDF)
         fig.savefig(image_path)
         return send_file(image_path, mimetype='image/pdf')
 
@@ -99,7 +99,7 @@ def populate_db():
 
 if __name__ == '__main__':
     with app.app_context():
-        db_file = os.environ.get('TITANIC_DB') or 'titanic.db'
+        db_file = os.environ.get('TITANIC_DB') or TITANIC_DB
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         db.init_app(app)

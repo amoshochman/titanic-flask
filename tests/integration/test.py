@@ -1,5 +1,7 @@
-from app import get_passenger_attributes, fill_csv_dict, csv_dict
+from app import fill_csv_dict
+from utils import get_passenger_attributes
 from models import Passenger, db
+
 
 
 def test_passengers(client):

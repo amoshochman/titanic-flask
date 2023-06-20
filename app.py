@@ -46,8 +46,11 @@ class PassengersClass(Resource):
 @api.route('/histogram')
 class Histogram(Resource):
     def get(self):
-        csv_path = os.path.join(CUR_FOLDER, RAW_DATA, TITANIC_CSV)
-        df = pd.read_csv(csv_path)
+        if csv_dict:
+            df = pd.DataFrame.from_dict(csv_dict).T
+        else:
+            my_list = [as_dict(passenger) for passenger in Passenger.query.all()]
+            df = pd.DataFrame.from_records(my_list)
         ax = df.Fare.hist()
         fig = ax.get_figure()
         plt.show()
@@ -133,5 +136,4 @@ if __name__ == '__main__':
         app = create_app(f"sqlite:////{PROJECT_ROOT}/{TITANIC_DATABASE}")
     else:
         fill_csv_dict()
-        # raise ValueError("csv not implemented yet")
     app.run(debug=True)

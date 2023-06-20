@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
 class Passenger(db.Model):
     PassengerId = db.Column(db.Integer, primary_key=True)
     Survived = db.Column(db.Integer)
@@ -16,7 +17,8 @@ class Passenger(db.Model):
     Cabin = db.Column(db.String)
     Embarked = db.Column(db.String)
 
-    def __init__(self, PassengerId, Survived, Pclass, Name, Sex, Age, SibSp, Parch, Ticket, Fare, Cabin, Embarked):
+    def __init__(self, PassengerId, Survived=None, Pclass=None, Name=None, Sex=None, Age=None, SibSp=None, Parch=None,
+                 Ticket=None, Fare=None, Cabin=None, Embarked=None):
         self.PassengerId = PassengerId
         self.Survived = Survived
         self.Pclass = Pclass
@@ -29,7 +31,3 @@ class Passenger(db.Model):
         self.Fare = Fare
         self.Cabin = Cabin
         self.Embarked = Embarked
-
-
-
-

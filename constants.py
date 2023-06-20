@@ -1,0 +1,5 @@
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).parent
+
+TITANIC_DATABASE = "titanic.db"

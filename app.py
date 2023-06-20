@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib
 
-matplotlib.use('agg')
+matplotlib.use('agg') #check if in use
 import matplotlib.pyplot as plt
 from flask import Flask, send_file, jsonify
 import os
@@ -12,6 +12,8 @@ from flask_restx import reqparse
 import inspect
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
+from constants import PROJECT_ROOT, TITANIC_DATABASE
+
 CUR_FOLDER = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 ATTRIBUTES = 'attributes'
 RAW_DATA = 'data'
@@ -19,14 +21,13 @@ TITANIC_CSV = 'titanic.csv'
 HIST_PDF = 'hist.pdf'
 TITANIC_DB = 'titanic.db'
 
+app = Flask(__name__)
+api = Api(app)
+
 
 def as_dict(my_object, attributes_list=None):
     return {c.name: getattr(my_object, c.name) for c in my_object.__table__.columns if
             (not attributes_list or c.name in attributes_list)}
-
-
-app = Flask(__name__)
-api = Api(app)
 
 
 @api.route('/passengers')
@@ -52,20 +53,17 @@ parser = reqparse.RequestParser()
 parser.add_argument(ATTRIBUTES, help="The desired attribute fields", required=False)
 
 
+def get_passenger_attributes():
+    passenger_attributes_tuples = inspect.getmembers(Passenger, lambda a: not (inspect.isroutine(a)))
+    return {my_tuple[0] for my_tuple in passenger_attributes_tuples if isinstance(my_tuple[1], InstrumentedAttribute)}
+
+
 def get_attributes_list(attributes):
     input_attributes_list = [elem.strip().capitalize() for elem in attributes.split()]
-    cleaned_list = []
-    passenger_attributes_tuples = inspect.getmembers(Passenger, lambda a: not (inspect.isroutine(a)))
-    passenger_attributes_names = [elem[0] for elem in passenger_attributes_tuples]
-    for elem in input_attributes_list:
-        if elem in passenger_attributes_names:
-            elem_type = [some_tuple for some_tuple in passenger_attributes_tuples if some_tuple[0] == elem][0][1]
-            if not isinstance(elem_type, InstrumentedAttribute):
-                raise ValueError("Invalid attribute:" + elem)
-            cleaned_list.append(elem)
-        else:
-            raise ValueError("Invalid attribute:" + elem)
-    return cleaned_list
+    invalid_attributes = {att for att in input_attributes_list if att not in get_passenger_attributes()}
+    if invalid_attributes:
+        raise ValueError("Invalid attribute/s:" + str(invalid_attributes))
+    return input_attributes_list
 
 
 @api.route('/passenger/<int:passenger_id>')
@@ -80,30 +78,20 @@ class PassengerClass(Resource):
                 attributes_list = get_attributes_list(attributes)
             except ValueError as e:
                 return str(e), 400
+        else:
+            attributes_list = None
         passenger = Passenger.query.get(passenger_id)
         if not passenger:
             return "No passenger found with id: " + str(passenger_id), 400
         return jsonify(as_dict(passenger, attributes_list=attributes_list))
 
 
-def populate_db():
-    csv_path = os.path.join(CUR_FOLDER, RAW_DATA, TITANIC_CSV)
-    with open(csv_path) as f:
-        reader = csv.reader(f)
-        _ = next(reader)
-        for i, data in enumerate(reader):
-            passenger = Passenger(*data)
-            db.session.add(passenger)
-        db.session.commit()
+def create_app(db_location):
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_location
+    db.init_app(app)
+    return app
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        db_file = os.environ.get('TITANIC_DB') or TITANIC_DB
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        db.init_app(app)
-        db.create_all()
-        if not Passenger.query.first():
-            populate_db()
+    app = create_app(f"sqlite:////{PROJECT_ROOT}/{TITANIC_DATABASE}")
     app.run(debug=True)

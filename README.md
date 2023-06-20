@@ -2,7 +2,7 @@
 
 ### A web app made with Flask, SQLAlchemy, SQLite
 
-In order to run, execute "python app.py". In config.ini file, the value for DATA can be either "csv" or "db"
+In order to run, simply execute "python app.py". 
 
-We could split the code into more files but being the shortness of it (~100 lines) I decided to keep it like this to not-overkill.
+The value for _DATA -> source_ in config.ini file can be either "csv" or "db"
 

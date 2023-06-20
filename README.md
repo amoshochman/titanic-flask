@@ -2,9 +2,9 @@
 
 ### A web app made with Flask, SQLAlchemy, SQLite, Swagger
 
-##### Retrieves specific data and statistics about the famous Titanic CSV
+##### Retrieves data & statistics from the very well known famous Titanic CSV
 
-Exposes three endpoints, all of them being _get_. 
+Exposes three _get_ endpoints.. 
 
 2. **/passengers** retrieves all the data for all the passengers.
 3. **/passenger/<passenger_id>** retrieves the data for the passenger with the specified id. 

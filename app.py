@@ -3,7 +3,7 @@ import csv
 import pandas as pd
 import matplotlib
 
-from utils import as_dict, get_attributes_list, use_db, get_number_or_string
+from utils import as_dict, get_attributes_list, get_number_or_string, get_config
 
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -13,7 +13,8 @@ from models import Passenger, db
 from flask_restx import Api, Resource
 from flask_restx import reqparse
 
-from constants import PROJECT_ROOT, TITANIC_DATABASE, ATTRIBUTES, RAW_DATA, HIST_PDF, TITANIC_CSV
+from constants import PROJECT_ROOT, TITANIC_DATABASE, ATTRIBUTES, RAW_DATA, HIST_PDF, TITANIC_CSV, USE_DB_STRING, \
+    HOST_STRING
 
 app = Flask(__name__)
 api = Api(app)
@@ -83,8 +84,9 @@ def create_app(db_location):
 
 
 if __name__ == '__main__':
-    if use_db():
+    config_dict = get_config()
+    if config_dict[USE_DB_STRING]:
         app = create_app(f"sqlite:////{PROJECT_ROOT}/{TITANIC_DATABASE}")
     else:
          fill_csv_dict()
-    app.run(debug=True)
+    app.run(debug=True, host=config_dict[HOST_STRING])

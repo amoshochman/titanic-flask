@@ -1,12 +1,9 @@
 import configparser
-import csv
 import inspect
-import os
 
 from sqlalchemy.orm import InstrumentedAttribute
 
-
-from constants import PROJECT_ROOT, RAW_DATA, TITANIC_CSV
+from constants import HOST_STRING, USE_DB_STRING
 from models import Passenger
 
 
@@ -30,16 +27,18 @@ def get_attributes_list(attributes):
     return input_attributes_list
 
 
-def use_db():
+def get_config():
+    config_dict = {}
     config = configparser.ConfigParser()
+    config.read('config.ini')
+    source = config.get('DATA', 'source', fallback="db")
     try:
-        config.read('config.ini')
-        source = config['DATA']['source']
         assert source in ('db', 'csv')
-        return True if source == 'db' else False
     except:
-        raise ValueError(
-            "Invalid configuration given. Expected file config.ini with section DATA['source'] either equal to 'db' or 'csv'")
+        raise ValueError("Invalid configuration given. File config.ini[DATA][source] should be either 'db' or 'csv'")
+    config_dict[USE_DB_STRING] = True if source == 'db' else False
+    config_dict[HOST_STRING] = config.get('NETWORK', 'host', fallback="localhost")
+    return config_dict
 
 
 def get_number_or_string(string):
@@ -48,5 +47,3 @@ def get_number_or_string(string):
         return int(string) if string.isnumeric() else my_float
     except ValueError:
         return string
-
-

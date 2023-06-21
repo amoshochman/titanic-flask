@@ -7,3 +7,5 @@ RAW_DATA = 'data'
 TITANIC_CSV = 'titanic.csv'
 HIST_PDF = 'hist.pdf'
 TITANIC_DB = 'titanic.db'
+USE_DB_STRING = "use_db"
+HOST_STRING = "host"
